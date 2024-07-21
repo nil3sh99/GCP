@@ -1,0 +1,69 @@
+Hands-on lab link: https://www.cloudskillsboost.google/course_templates/625/labs/464389
+
+
+1. This lab assumes that you have a sample application ready with you.
+2. To create the clusters in GKE, run the following command
+gcloud container clusters create nilesh-cluster --machine-type e2-small\
+--num-node 3 --scope "https://www.googleapis.com/auth/projecthosting,storage-rw"
+
+3. 'Deployments' in GKE is a way to manage your pods and replica sets.
+example deployment file -- auth.yaml:
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+        track: stable
+    spec:
+      containers:
+        - name: auth
+          image: "kelseyhightower/auth:2.0.0"
+          ports:
+            - name: http
+              containerPort: 80
+            - name: health
+              containerPort: 81
+          resources:
+            limits:
+              cpu: 0.2
+              memory: "10Mi"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 81
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: 81
+              scheme: HTTP
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+
+4. To create the deployment object: 
+kubectl create -f auth.yaml
+
+Rolling Update
+5. Deployments support updating images to a new version through a 
+rolling update mechanism. When a deployment is updated with a new version, it creates a new ReplicaSet and slowly increases the number of replicas in the new ReplicaSet as it decreases the replicas in the old ReplicaSet.
+
+Canary Update
+6. When you want to test a new deployment in production with a subset of your users, use a canary deployment. Canary deployments allow you to release a change to a small subset of your users to mitigate risk associated with new releases.
+
+Blue-green deployment
+7. Rolling updates are ideal because they allow you to deploy an application slowly with minimal overhead, minimal performance impact, and minimal downtime. There are instances where it is beneficial to modify the load balancers to point to that new version only after it has been fully deployed. In this case, blue-green deployments are the way to go.
+
+Kubernetes achieves this by creating two separate deployments; one for the old "blue" version and one for the new "green" version. Use your existing hello deployment for the "blue" version. The deployments will be accessed via a service which will act as the router. Once the new "green" version is up and running, you'll switch over to using that version by updating the service.
+
