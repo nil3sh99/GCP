@@ -29,12 +29,19 @@ const auth = new GoogleAuth();
 app.get('/', async (req, res) => {
     const project = await auth.getProjectId();
 
+    // create an instance of vertexAI class
     const vertex = new VertexAI({ project: project });
+    
+    // create a genAI model
     const generativeModel = vertex.getGenerativeModel({
         model: 'gemini-1.5-flash'
     });
 
+    // how to create a query string '?'
+    // go to URL where the application is deployed
+    // localhost:8080?animal=flamingo
     const animal = req.query.animal || 'dog';
+    
     const prompt = `Give me 10 fun facts about ${animal}. Return this as html without backticks.`
     const resp = await generativeModel.generateContent(prompt);
     const html = resp.response.candidates[0].content.parts[0].text;
