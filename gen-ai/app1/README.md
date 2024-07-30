@@ -1,5 +1,7 @@
 # Overview
 
+https://codelabs.developers.google.com/codelabs/deploy-from-github/gen-ai-nodejs#0
+
 The api's which has to be enabled for this project are:
 
 - cloud run
@@ -21,3 +23,6 @@ Install express to handle the application server
 create a .gitignore file and put /node_modules inside it
 
 code for index.js is available in the file.
+
+## Build Trigger
+Trigger is a cloud build entity which takes the application code and creates a build for it.
